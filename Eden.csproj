@@ -1,10 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Silk.NET" Version="2.15.0" />
+    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.256" />
+    <PackageReference Include="Topten.RichTextKit" Version="0.4.151" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Flexbox\Flexbox.csproj" />
+  </ItemGroup>
 
 </Project>
