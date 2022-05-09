@@ -5,30 +5,55 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using SkiaSharp;
-using Flexbox;
+using Facebook.Yoga;
 
 namespace Eden
 {
     public class Panel
     {
-        public Panel? Parent { get; protected set; }
+        bool Active = false;
+        bool Hovered = false;
+        bool Focused = false;
 
-        private Node _node;
+        public Panel? Parent
+        {
+            get => _parent;
+            set => SetParent(value);
+        }
 
-        private bool _isInvalid;
+        public void SetParent(Panel? value)
+        {
+            _parent = value;
+        }
+
+        private Panel? _parent;
+
+        public YogaNode _node;
 
         public string[] ClassNames { get; set; }
-        public Style NodeStyle => _node.nodeStyle;
 
         //public PanelStyle Style; //TODO: Implement PanelStyle (will hold parsed CSS styles)
 
         public List<Panel> Children { get; protected set; }
 
-        public float Width => _node.layout.width;
-        public float Height => _node.layout.height;
 
-        public float X => _node.layout.x;
-        public float Y => _node.layout.y;
+        public YogaValue Width
+        {
+            get => _width;
+            set => _node.Width = value;
+        }
+        public YogaValue Height
+        {
+            get => _height;
+            set => _node.Height = value;
+        }
+
+        private float _width => _node.LayoutWidth;
+        private float _height => _node.LayoutHeight;
+
+        public float X => _node.LayoutX;
+        public float Y => _node.LayoutY;
+
 
         public SKPoint Position { get { return new SKPoint(X, Y); } }
 
@@ -47,6 +72,7 @@ namespace Eden
         public void AddChild(Panel child)
         {
             Children.Add(child);
+            _node.AddChild(child._node);
             child.Parent = this;
         }
 
@@ -57,9 +83,9 @@ namespace Eden
 
         public void RecalculateLayout()
         {
-            _node.CalculateLayout(Parent?.Width ?? 500f , Parent?.Height ?? 500f, Direction.Inherit);
-            Children.ForEach(x => x.RecalculateLayout());
-
+            _node.CalculateLayout(Parent?.Width.Value ?? 500f , Parent?.Height.Value ?? 500f);
         }
+
+        public static implicit operator YogaNode(Panel p) => p._node;
     }
 }
