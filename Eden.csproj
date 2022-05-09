@@ -18,4 +18,16 @@
     <ProjectReference Include="..\Flexbox\Flexbox.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Facebook.Yoga">
+      <HintPath>Facebook.Yoga.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="yoga.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
