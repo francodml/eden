@@ -1,10 +1,17 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using Flexbox;
 using Silk.NET.Windowing;
+using Silk.NET.Input;
+using Silk.NET.Maths;
+using System.Numerics;
 using SkiaSharp;
+using Eden;
 using System.Collections.Generic;
+using Facebook.Yoga;
+using Topten.RichTextKit;
 
-Node root = new();
+Panel root = new();
+
+YogaNode node = new();
 
 IWindow window;
 
@@ -20,20 +27,47 @@ SKCanvas canvas = null;
 SKPaint paint = null;
 SKPaint paint2 = null;
 
+var textPaint = new SKPaint();
+textPaint.Color = new SKColor(255, 255, 255);
+textPaint.TextSize = 24;
+textPaint.Typeface = SKTypeface.FromFamilyName("Arial");
+
 // create window and listen for events.
-window = Window.Create(WindowOptions.Default);
-window.WindowBorder = WindowBorder.Resizable;
+var WindowConfig = WindowOptions.Default;
+WindowConfig.Size = new Silk.NET.Maths.Vector2D<int>(1280, 700);
+WindowConfig.Title = "Eden";
+window = Window.Create(WindowConfig);
+
+IKeyboard primaryKeyboard;
+Vector2 MousePosition = default;
 
 window.Load += () =>
 {
-    var child = new Node();
-    var child2 = new Node();
+    var child = new Panel();
+    var child2 = new Panel();
 
-    root.nodeStyle.Apply("width: 100%; height: 100%; flex-direction: column; justify-content: space-around; align-items: center;");
-    child.nodeStyle.Apply("width: 50px; height: 50px;");
-    child2.nodeStyle.Apply("width: 50px; height: 50px;");
+    root.Width = window.Size.X;
+    root.Height = window.Size.Y;
+    root._node.Display = YogaDisplay.Flex;
+    root._node.FlexDirection = YogaFlexDirection.Row;
+    root._node.Wrap = YogaWrap.Wrap;
+    root._node.JustifyContent = YogaJustify.SpaceBetween;
+    root._node.AlignItems = YogaAlign.Center;
+    child.Width = 20.Percent();
+    child._node.Margin = 50.Pt();
+    child.Height = 30.Pt();
+    child2._node.CopyStyle(child);
     root.AddChild(child);
     root.AddChild(child2);
+
+    for (int i = 30; i > 0; i--)
+    {
+        Panel p = new();
+        p._node.CopyStyle(child);
+        root.AddChild(p);
+    }
+
+    root.RecalculateLayout();
 
     skiaGlInterface = GRGlInterface.CreateOpenGl(name =>
     {
@@ -67,30 +101,42 @@ window.Load += () =>
 
     paint2 = new SKPaint();
     paint2.Color = new SKColor(0, 255, 0);
+
+    IInputContext input = window.CreateInput();
+    primaryKeyboard = input.Keyboards.FirstOrDefault();
+    if (primaryKeyboard != null)
+    {
+        primaryKeyboard.KeyDown += KeyDown;
+    }
+    for (int i = 0; i < input.Mice.Count; i++)
+    {
+        input.Mice[i].Cursor.CursorMode = CursorMode.Normal;
+        input.Mice[i].MouseMove += OnMouseMove;
+        input.Mice[i].Scroll += OnMouseWheel;
+    }
+
 };
 
 window.Render += deltaTime =>
 {
     // draw a basic rectangle
-    root.MarkAsDirty();
-    root.CalculateLayout(skiaBackendRenderTarget.Width, skiaBackendRenderTarget.Height, Direction.LTR);
 
     canvas.Clear(new SKColor(255, 0, 0));
 
-    canvas.DrawRect(root.layout.x, root.layout.y, root.layout.width, root.layout.height, paint);
+    canvas.DrawRect(root.X, root.Y, root.Width.Value, root.Height.Value, paint);
 
-    for (int i = 0; i < root.ChildrenCount; i++)
+    foreach (Panel child in root.Children)
     {
-        Node child = root.GetChild(i);
-        canvas.DrawRect(child.layout.x, child.layout.y, child.layout.width, child.layout.height, paint2);
+        canvas.DrawRect(child.X, child.Y, child.Width.Value, child.Height.Value, paint2);
+        canvas.DrawText($"{child._node}", new SKPoint(child.X, child.Y+15), textPaint);
     }
 
-    var textPaint = new SKPaint();
-    textPaint.Color = new SKColor(255, 255, 255);
-    textPaint.Typeface = SKTypeface.FromFamilyName("Segoe UI");
     canvas.DrawText($"{window.Size}", new SKPoint(0,20), textPaint);
-    canvas.DrawText($"{root.layout}", new SKPoint(0,35), textPaint);
+    canvas.DrawText($"{root._node}", new SKPoint(0,40), textPaint);
 
+    canvas.DrawText($"{deltaTime*60*60}", new SKPoint(0,60), textPaint);
+
+    canvas.DrawCircle(new SKPoint(MousePosition.X, MousePosition.Y), 2, paint2);
 
     canvas.Flush(); // wait for commands to finish
 };
@@ -118,15 +164,36 @@ window.FramebufferResize += newSize =>
 
     surface = SKSurface.Create(skiaBackendContext, skiaBackendRenderTarget, format);
     canvas = surface.Canvas;
-    root.nodeStyle.Apply($"width: {newSize.X}px; height: {newSize.Y}px;");
-    root.MarkAsDirty();
+    root.Width = newSize.X;
+    root.Height = newSize.Y;
+    root.RecalculateLayout();
 
-    Flex.CalculateLayout(root, newSize.X, newSize.Y, Direction.LTR);
     Console.WriteLine(newSize);
     Console.WriteLine(skiaBackendRenderTarget.Size);
-    Console.WriteLine(root.layout.ToString());
 
 };
+
+void OnMouseMove(IMouse mouse, Vector2 position)
+{
+    if (MousePosition == default) { MousePosition = position; }
+    else
+    {
+        MousePosition = position;
+    }
+}
+
+void OnMouseWheel(IMouse mouse, ScrollWheel scrollWheel)
+{
+
+}
+
+void KeyDown(IKeyboard keyboard, Key key, int arg3)
+{
+    if (key == Key.Escape)
+    {
+        window.Close();
+    }
+}
 
 window.Run();
 
