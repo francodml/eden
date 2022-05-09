@@ -14,6 +14,7 @@ namespace Eden
         bool Active = false;
         bool Hovered = false;
         bool Focused = false;
+        bool Invalid = true;
 
         public Panel? Parent
         {
@@ -32,7 +33,7 @@ namespace Eden
 
         public string[] ClassNames { get; set; }
 
-        //public PanelStyle Style; //TODO: Implement PanelStyle (will hold parsed CSS styles)
+        //public Style Style; //TODO: Implement PanelStyle (will hold parsed CSS styles)
 
         public List<Panel> Children { get; protected set; }
 
@@ -78,12 +79,13 @@ namespace Eden
 
         public void InvalidateLayout()
         {
-
+            Invalid = true;
         }
 
         public void RecalculateLayout()
         {
             _node.CalculateLayout(Parent?.Width.Value ?? 500f , Parent?.Height.Value ?? 500f);
+            Invalid = false;
         }
 
         public static implicit operator YogaNode(Panel p) => p._node;
