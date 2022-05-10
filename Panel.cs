@@ -6,15 +6,18 @@ using System.Threading.Tasks;
 using System.Linq;
 using SkiaSharp;
 using Facebook.Yoga;
+using System.Numerics;
 
 namespace Eden
 {
     public class Panel
     {
-        bool Active = false;
-        bool Hovered = false;
-        bool Focused = false;
-        bool Invalid = true;
+        public bool Active = false;
+        public bool Hovered = false;
+        public bool Focused = false;
+        public bool Invalid = false;
+
+        public SKColor Color { get; set; } = new(0, 255, 0, 255);
 
         public Panel? Parent
         {
@@ -89,5 +92,35 @@ namespace Eden
         }
 
         public static implicit operator YogaNode(Panel p) => p._node;
+
+        public virtual void OnClick()
+        {
+            Console.WriteLine("Click click!");
+        }
+        
+        public virtual void Update(Vector2 mp)
+        {
+            if (Invalid)
+                RecalculateLayout();
+            Children.ForEach(x => x.Update(mp));
+
+            //check if mp is within element bounds
+            if (mp.X >= X && mp.X <= X + Width.Value && mp.Y >= Y && mp.Y <= Y + Height.Value)
+            {
+                if (!Hovered)
+                {
+                    Hovered = true;
+                    Color = new SKColor(255, 255, 255, 255);
+                }
+            }
+            else
+            {
+                if (Hovered)
+                {
+                    Hovered = false;
+                    Color = new SKColor(0, 255, 0, 255);
+                }
+            }
+        }
     }
 }

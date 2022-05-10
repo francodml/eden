@@ -36,6 +36,7 @@ textPaint.Typeface = SKTypeface.FromFamilyName("Arial");
 var WindowConfig = WindowOptions.Default;
 WindowConfig.Size = new Silk.NET.Maths.Vector2D<int>(1280, 700);
 WindowConfig.Title = "Eden";
+WindowConfig.VSync = false;
 window = Window.Create(WindowConfig);
 
 IKeyboard primaryKeyboard;
@@ -60,12 +61,12 @@ window.Load += () =>
     root.AddChild(child);
     root.AddChild(child2);
 
-    for (int i = 30; i > 0; i--)
-    {
-        Panel p = new();
-        p._node.CopyStyle(child);
-        root.AddChild(p);
-    }
+    //for (int i = 30; i > 0; i--)
+    //{
+    //    Panel p = new();
+    //    p._node.CopyStyle(child);
+    //    root.AddChild(p);
+    //}
 
     root.RecalculateLayout();
 
@@ -113,6 +114,7 @@ window.Load += () =>
         input.Mice[i].Cursor.CursorMode = CursorMode.Normal;
         input.Mice[i].MouseMove += OnMouseMove;
         input.Mice[i].Scroll += OnMouseWheel;
+        input.Mice[i].MouseDown += OnMouseDown;
     }
 
 };
@@ -127,6 +129,7 @@ window.Render += deltaTime =>
 
     foreach (Panel child in root.Children)
     {
+        paint2.Color = child.Color;
         canvas.DrawRect(child.X, child.Y, child.Width.Value, child.Height.Value, paint2);
         canvas.DrawText($"{child._node}", new SKPoint(child.X, child.Y+15), textPaint);
     }
@@ -134,7 +137,8 @@ window.Render += deltaTime =>
     canvas.DrawText($"{window.Size}", new SKPoint(0,20), textPaint);
     canvas.DrawText($"{root._node}", new SKPoint(0,40), textPaint);
 
-    canvas.DrawText($"{deltaTime*60*60}", new SKPoint(0,60), textPaint);
+    canvas.DrawText($"{window.FramesPerSecond}", new SKPoint(0,60), textPaint);
+    canvas.DrawText($"{MousePosition}", new SKPoint(0,80), textPaint);
 
     canvas.DrawCircle(new SKPoint(MousePosition.X, MousePosition.Y), 2, paint2);
 
@@ -173,6 +177,11 @@ window.FramebufferResize += newSize =>
 
 };
 
+window.Update += deltaTime =>
+{
+    root.Update(MousePosition);
+};
+
 void OnMouseMove(IMouse mouse, Vector2 position)
 {
     if (MousePosition == default) { MousePosition = position; }
@@ -183,6 +192,11 @@ void OnMouseMove(IMouse mouse, Vector2 position)
 }
 
 void OnMouseWheel(IMouse mouse, ScrollWheel scrollWheel)
+{
+
+}
+
+void OnMouseDown(IMouse mouse, MouseButton button)
 {
 
 }
