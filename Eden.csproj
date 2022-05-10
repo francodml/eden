@@ -16,10 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Flexbox\Flexbox.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Facebook.Yoga">
       <HintPath>Facebook.Yoga.dll</HintPath>
     </Reference>
