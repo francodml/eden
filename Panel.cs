@@ -10,6 +10,21 @@ using System.Numerics;
 
 namespace Eden
 {
+
+    public struct Bounds
+    {
+        public Vector2 Min;
+        public Vector2 Max;
+        public Bounds(Vector2 min, Vector2 max)
+        {
+            Min = min;
+            Max = max;
+        }
+        public bool IsInside(Vector2 p)
+        {
+            return p.X >= Min.X && p.X <= Max.X && p.Y >= Min.Y && p.Y <= Max.Y;
+        }
+    }
     public class Panel
     {
         public bool Active = false;
@@ -18,7 +33,7 @@ namespace Eden
         public bool Invalid = false;
 
         public SKColor Color { get; set; } = new(0, 255, 0, 255);
-
+        public Bounds Bounds { get; private set; }
         public Panel? Parent
         {
             get => _parent;
@@ -88,7 +103,14 @@ namespace Eden
         public void RecalculateLayout()
         {
             _node.CalculateLayout(Parent?.Width.Value ?? 500f , Parent?.Height.Value ?? 500f);
+            RecalculateBounds();
             Invalid = false;
+        }
+
+        private void RecalculateBounds()
+        {
+            Bounds = new(new Vector2(X, Y), new Vector2(X + _width, Y + _height));
+            Children.ForEach(x => x.RecalculateBounds());
         }
 
         public static implicit operator YogaNode(Panel p) => p._node;
@@ -105,7 +127,7 @@ namespace Eden
             Children.ForEach(x => x.Update(mp));
 
             //check if mp is within element bounds
-            if (mp.X >= X && mp.X <= X + Width.Value && mp.Y >= Y && mp.Y <= Y + Height.Value)
+            if (Bounds.IsInside(mp))
             {
                 if (!Hovered)
                 {
