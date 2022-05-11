@@ -34,6 +34,7 @@ namespace Eden
 
             var css = File.OpenText(path).ReadToEnd();
             var style = Style.FromString(css);
+            style.FilePath = path;
 
             return style;
         }

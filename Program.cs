@@ -1,10 +1,10 @@
 ﻿// See https://aka.ms/new-console-template for more information
+global using Eden;
 using Silk.NET.Windowing;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using System.Numerics;
 using SkiaSharp;
-using Eden;
 using System.Collections.Generic;
 using Facebook.Yoga;
 using Topten.RichTextKit;
@@ -34,9 +34,9 @@ textPaint.Typeface = SKTypeface.FromFamilyName("Arial");
 
 // create window and listen for events.
 var WindowConfig = WindowOptions.Default;
-WindowConfig.Size = new Silk.NET.Maths.Vector2D<int>(1280, 700);
+WindowConfig.Size = new Vector2D<int>(1280, 700);
 WindowConfig.Title = "Eden";
-WindowConfig.VSync = false;
+//WindowConfig.VSync = false;
 window = Window.Create(WindowConfig);
 
 IKeyboard primaryKeyboard;
@@ -119,7 +119,9 @@ window.Load += () =>
 
 };
 
-window.Render += deltaTime =>
+window.Render += Render;
+
+void Render(double deltaTime)
 {
     // draw a basic rectangle
 
@@ -198,7 +200,7 @@ void OnMouseWheel(IMouse mouse, ScrollWheel scrollWheel)
 
 void OnMouseDown(IMouse mouse, MouseButton button)
 {
-
+    root.Children.Where(x => x.Hovered).ToList().ForEach(x => x.OnClick());
 }
 
 void KeyDown(IKeyboard keyboard, Key key, int arg3)
